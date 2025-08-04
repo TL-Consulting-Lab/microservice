@@ -1,0 +1,22 @@
+{
+  "name": "microservices-app",
+  "version": "1.0.0",
+  "description": "Microservices application with Node.js and Docker",
+  "private": true,
+  "scripts": {
+    "install:all": "cd user-service && npm install && cd ../order-service && npm install && cd ../api-gateway && npm install",
+    "start:user": "cd user-service && npm start",
+    "start:order": "cd order-service && npm start",
+    "start:gateway": "cd api-gateway && npm start",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:up:build": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "test:health": "powershell -Command \"Invoke-RestMethod http://localhost:3000/health; Invoke-RestMethod http://localhost:3001/health; Invoke-RestMethod http://localhost:3002/health\"",
+    "clean": "Remove-Item -Path 'user-service/node_modules', 'order-service/node_modules', 'api-gateway/node_modules' -Recurse -Force -ErrorAction SilentlyContinue"
+  },
+  "keywords": ["microservices", "node.js", "express", "docker"],
+  "author": "Microservices Team",
+  "license": "MIT"
+}

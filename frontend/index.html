@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microservices Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .service-card {
+            transition: transform 0.2s;
+            border-left: 4px solid #007bff;
+        }
+        .service-card:hover {
+            transform: translateY(-2px);
+        }
+        .status-healthy {
+            color: #28a745;
+        }
+        .status-error {
+            color: #dc3545;
+        }
+        .api-response {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: -15px -15px 20px -15px;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+        }
+        .action-btn {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-network-wired me-2"></i>
+                Microservices Dashboard
+            </a>
+            <span class="navbar-text">
+                <i class="fas fa-server me-1"></i>
+                API Gateway: <span id="gateway-status" class="badge bg-secondary">Checking...</span>
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Service Status Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card service-card">
+                    <div class="card-header section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-heartbeat me-2"></i>
+                            Service Health Status
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded">
+                                    <i class="fas fa-gateway fa-2x mb-2 text-primary"></i>
+                                    <h6>API Gateway</h6>
+                                    <span id="gateway-health" class="badge bg-secondary">Checking...</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded">
+                                    <i class="fas fa-users fa-2x mb-2 text-success"></i>
+                                    <h6>User Service</h6>
+                                    <span id="user-health" class="badge bg-secondary">Checking...</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center p-3 border rounded">
+                                    <i class="fas fa-shopping-cart fa-2x mb-2 text-warning"></i>
+                                    <h6>Order Service</h6>
+                                    <span id="order-health" class="badge bg-secondary">Checking...</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-outline-primary" onclick="checkAllHealth()">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Refresh Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card service-card">
+                    <div class="card-header section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-friends me-2"></i>
+                            User Management
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <button class="btn btn-primary action-btn" onclick="getAllUsers()">
+                                <i class="fas fa-list me-1"></i>
+                                Get All Users
+                            </button>
+                            <button class="btn btn-success action-btn" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                                <i class="fas fa-plus me-1"></i>
+                                Create User
+                            </button>
+                        </div>
+                        <div id="users-response" class="api-response p-3" style="display: none;">
+                            <strong>Response:</strong>
+                            <pre id="users-data"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card service-card">
+                    <div class="card-header section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shopping-bag me-2"></i>
+                            Order Management
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <button class="btn btn-primary action-btn" onclick="getAllOrders()">
+                                <i class="fas fa-list me-1"></i>
+                                Get All Orders
+                            </button>
+                            <button class="btn btn-success action-btn" data-bs-toggle="modal" data-bs-target="#createOrderModal">
+                                <i class="fas fa-plus me-1"></i>
+                                Create Order
+                            </button>
+                        </div>
+                        <div id="orders-response" class="api-response p-3" style="display: none;">
+                            <strong>Response:</strong>
+                            <pre id="orders-data"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Testing Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card service-card">
+                    <div class="card-header section-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-code me-2"></i>
+                            API Testing Console
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">HTTP Method:</label>
+                                    <select class="form-select" id="api-method">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                        <option value="PUT">PUT</option>
+                                        <option value="DELETE">DELETE</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Endpoint:</label>
+                                    <input type="text" class="form-control" id="api-endpoint" placeholder="/api/users" value="/api/users">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Request Body (JSON):</label>
+                            <textarea class="form-control" id="api-body" rows="3" placeholder='{"name": "Test User", "email": "test@example.com", "age": 25}'></textarea>
+                        </div>
+                        <button class="btn btn-warning" onclick="executeCustomAPI()">
+                            <i class="fas fa-play me-1"></i>
+                            Execute Request
+                        </button>
+                        <div id="custom-response" class="api-response p-3 mt-3" style="display: none;">
+                            <strong>Response:</strong>
+                            <pre id="custom-data"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div class="modal fade" id="createUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <div class="mb-3">
+                            <label class="form-label">Name:</label>
+                            <input type="text" class="form-control" id="userName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email:</label>
+                            <input type="email" class="form-control" id="userEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Age:</label>
+                            <input type="number" class="form-control" id="userAge" required min="1" max="120">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createUser()">Create User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Order Modal -->
+    <div class="modal fade" id="createOrderModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="orderForm">
+                        <div class="mb-3">
+                            <label class="form-label">User ID:</label>
+                            <input type="number" class="form-control" id="orderUserId" required min="1">
+                            <small class="form-text text-muted">Enter the ID of an existing user</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Product:</label>
+                            <input type="text" class="form-control" id="orderProduct" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Quantity:</label>
+                            <input type="number" class="form-control" id="orderQuantity" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price per item:</label>
+                            <input type="number" step="0.01" class="form-control" id="orderPrice" required min="0">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createOrder()">Create Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
