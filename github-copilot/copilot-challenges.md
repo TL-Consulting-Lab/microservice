@@ -13,8 +13,6 @@ Before beginning these challenges, ensure you have:
 
 ## Challenge Categories
 
-### 🚀 Beginner Challenges
-
 #### Challenge 1: Add User Profile Pictures
 
 **Scenario:** Users want to personalize their profiles by adding profile pictures. The product owner has requested this feature to improve user engagement.
@@ -110,8 +108,6 @@ Before beginning these challenges, ensure you have:
 - Add performance monitoring and alerting
 
 **Challenge:** How will you correlate logs across different services? What logging format and tools will provide the best debugging experience?
-
-### 🔧 Advanced Challenges
 
 #### Challenge 9: Implement Service Discovery
 
