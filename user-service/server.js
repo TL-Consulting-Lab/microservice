@@ -51,13 +51,21 @@ let nextUserId = 4;
 const userSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
-  age: Joi.number().integer().min(0).max(150).required()
+  age: Joi.number().integer().min(0).max(150).required(),
+  profilePictureUrl: Joi.string().uri().pattern(/\.(jpg|jpeg|png|gif|webp)$/i).optional()
+    .messages({
+      'string.pattern.base': 'Profile picture URL must be a valid image file (.jpg, .jpeg, .png, .gif, .webp)'
+    })
 });
 
 const updateUserSchema = Joi.object({
   name: Joi.string().min(2).max(100),
   email: Joi.string().email(),
-  age: Joi.number().integer().min(0).max(150)
+  age: Joi.number().integer().min(0).max(150),
+  profilePictureUrl: Joi.string().uri().pattern(/\.(jpg|jpeg|png|gif|webp)$/i).optional()
+    .messages({
+      'string.pattern.base': 'Profile picture URL must be a valid image file (.jpg, .jpeg, .png, .gif, .webp)'
+    })
 }).min(1);
 
 // Helper function to find user by ID

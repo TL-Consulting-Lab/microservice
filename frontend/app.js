@@ -8,7 +8,38 @@ function displayResponse(elementId, data, isError = false) {
     
     element.style.display = 'block';
     element.className = `api-response p-3 ${isError ? 'border-danger' : 'border-success'}`;
-    dataElement.textContent = JSON.stringify(data, null, 2);
+    
+    // Special formatting for user data to show profile pictures
+    if (elementId === 'users-response' && data.data && Array.isArray(data.data)) {
+        dataElement.innerHTML = formatUsersWithPictures(data);
+    } else {
+        dataElement.textContent = JSON.stringify(data, null, 2);
+    }
+}
+
+// Function to format users with profile pictures nicely
+function formatUsersWithPictures(data) {
+    let html = '<strong>Users (' + data.count + '):</strong>\n\n';
+    
+    data.data.forEach((user, index) => {
+        html += `<div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px;">`;
+        html += `<strong>${user.name}</strong> (ID: ${user.id})\n`;
+        html += `Email: ${user.email}\n`;
+        html += `Age: ${user.age}\n`;
+        
+        if (user.profilePictureUrl) {
+            html += `Profile Picture: <a href="${user.profilePictureUrl}" target="_blank">${user.profilePictureUrl}</a>\n`;
+            html += `<img src="${user.profilePictureUrl}" alt="Profile" style="max-width: 50px; max-height: 50px; border-radius: 25px; margin-top: 5px;" onerror="this.style.display='none'">\n`;
+        } else {
+            html += `Profile Picture: Not set\n`;
+        }
+        
+        html += `Created: ${formatTimestamp(user.createdAt)}\n`;
+        html += `Updated: ${formatTimestamp(user.updatedAt)}`;
+        html += `</div>`;
+    });
+    
+    return html;
 }
 
 // Utility function to show loading state
@@ -87,10 +118,17 @@ async function createUser() {
     const name = document.getElementById('userName').value;
     const email = document.getElementById('userEmail').value;
     const age = parseInt(document.getElementById('userAge').value);
+    const profilePictureUrl = document.getElementById('userProfilePicture').value;
     
     if (!name || !email || !age) {
-        alert('Please fill in all fields');
+        alert('Please fill in all required fields');
         return;
+    }
+    
+    // Build request body, only include profilePictureUrl if provided
+    const requestBody = { name, email, age };
+    if (profilePictureUrl && profilePictureUrl.trim()) {
+        requestBody.profilePictureUrl = profilePictureUrl.trim();
     }
     
     try {
@@ -99,7 +137,7 @@ async function createUser() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, email, age })
+            body: JSON.stringify(requestBody)
         });
         
         const data = await response.json();
@@ -236,7 +274,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('api-body').value = JSON.stringify({
         name: "Test User",
         email: "test@example.com",
-        age: 25
+        age: 25,
+        profilePictureUrl: "https://example.com/profile.jpg"
     }, null, 2);
 });
 
